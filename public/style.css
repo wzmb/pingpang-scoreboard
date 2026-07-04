@@ -1,0 +1,231 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #121212;
+    color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    outline: none;
+    /* 去除 body 获得焦点时的默认外边框 */
+}
+
+.scoreboard-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.top-controls {
+    position: absolute;
+    bottom: 30px;
+    /* 改为底部 */
+    left: 50%;
+    transform: translateX(-50%);
+    /* 水平居中 */
+    z-index: 20;
+    transition: opacity 0.5s ease;
+    /* 增加淡入淡出动画 */
+    display: flex;
+    gap: 15px;
+    /* 按钮间距 */
+}
+
+.top-controls.hidden {
+    opacity: 0;
+    pointer-events: none;
+    /* 隐藏时不可点击 */
+}
+
+.icon-btn {
+    background: rgba(50, 50, 50, 0.6);
+    color: #fff;
+    border: 1px solid #444;
+    padding: 8px 16px;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.icon-btn:hover {
+    background: rgba(80, 80, 80, 0.8);
+}
+
+.team {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.3s ease;
+    position: relative;
+    /* 为子元素的绝对定位提供参考 */
+    perspective: 1000px;
+    /* 增加 3D 透视，配合翻牌效果 */
+}
+
+.left-team {
+    background-color: #1e1e1e;
+    border-right: 2px solid #333;
+}
+
+.right-team {
+    background-color: #1a1a1a;
+    border-left: 2px solid #333;
+}
+
+/* 动态颜色控制 */
+.color-red .team-name,
+.color-red .score,
+.color-red .sets {
+    color: #ff4757;
+}
+
+.color-blue .team-name,
+.color-blue .score,
+.color-blue .sets {
+    color: #1e90ff;
+}
+
+.team-name {
+    font-size: 3rem;
+    font-weight: bold;
+    position: absolute;
+    top: 30px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.serve-icon {
+    font-size: 2.5rem;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.serve-icon.active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.left-team .team-name {
+    left: 40px;
+}
+
+.right-team .team-name {
+    right: 40px;
+}
+
+.score {
+    font-size: 35vw;
+    font-weight: bold;
+    line-height: 1;
+    margin-bottom: 0;
+    font-variant-numeric: tabular-nums;
+    transform-style: preserve-3d;
+    transition: text-decoration 0.2s ease-in;
+}
+
+.is-serving {
+    text-decoration: underline;
+    text-underline-offset: 30px;
+    text-decoration-thickness: 10px;
+}
+
+.score.flipping {
+    animation: flipAnim 0.3s ease-in-out;
+}
+
+@keyframes flipAnim {
+    0% {
+        transform: rotateX(0deg);
+        opacity: 1;
+    }
+
+    50% {
+        transform: rotateX(90deg);
+        opacity: 0;
+    }
+
+    100% {
+        transform: rotateX(0deg);
+        opacity: 1;
+    }
+}
+
+.left-team .score {}
+
+.right-team .score {}
+
+.sets {
+    font-size: 2.5rem;
+    color: #aaa;
+    background: #333;
+    padding: 10px 30px;
+    border-radius: 50px;
+    position: absolute;
+    top: 30px;
+}
+
+.left-team .sets {
+    right: 40px;
+}
+
+.right-team .sets {
+    left: 40px;
+}
+
+.center-info {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    z-index: 10;
+}
+
+.qr-panel {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: white;
+    padding: 5px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    z-index: 10;
+    opacity: 0.5;
+    /* 半透明，降低存在感 */
+    transition: opacity 0.5s ease;
+}
+
+.qr-panel.hidden {
+    opacity: 0;
+    pointer-events: none;
+    /* 隐藏时不可交互 */
+}
+
+.qr-panel:hover {
+    opacity: 1;
+    /* 鼠标悬浮时恢复清晰 */
+}
+
+#qrcode {
+    display: block;
+}

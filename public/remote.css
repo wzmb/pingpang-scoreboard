@@ -1,0 +1,331 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    /* 禁止双击缩放和长按选中 */
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+body {
+    background-color: #121212;
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    /* 修复 iOS Safari 底部导航栏遮挡问题 */
+    height: 100vh;
+    height: 100dvh;
+    width: 100vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+}
+
+.status-bar {
+    height: 50px;
+    background-color: #1a1a1a;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+    border-bottom: 1px solid #333;
+}
+
+.team-name-btn {
+    flex: 1;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+}
+
+.left-name-btn {
+    color: #ff4757;
+    text-align: left;
+}
+
+.right-name-btn {
+    color: #1e90ff;
+    text-align: right;
+}
+
+#server-status {
+    font-size: 0.8rem;
+    color: #aaa;
+    white-space: nowrap;
+    padding: 0 10px;
+}
+
+.score-bar {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 20px 0;
+    background-color: #1a1a1a;
+    border-bottom: 2px solid #333;
+    flex: 0 0 auto;
+}
+
+.center-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+}
+
+.sets-score {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #fff;
+    letter-spacing: 2px;
+}
+
+.current-set {
+    font-size: 0.85rem;
+    color: #888;
+    white-space: nowrap;
+}
+
+.status-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.swap-btn {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0 10px;
+    outline: none;
+    transition: color 0.2s;
+}
+
+.swap-btn:active {
+    color: #fff;
+}
+
+#left-score-display {
+    color: #ff4757;
+}
+
+#right-score-display {
+    color: #1e90ff;
+}
+
+#left-score-display,
+#right-score-display {
+    font-size: 4.5rem;
+    font-weight: bold;
+    font-variant-numeric: tabular-nums;
+    width: 40%;
+    text-align: center;
+    transition: text-decoration 0.2s;
+}
+
+.is-serving {
+    text-decoration: underline;
+    text-underline-offset: 10px;
+    text-decoration-thickness: 4px;
+}
+
+.controls {
+    flex: 1;
+    display: flex;
+}
+
+.team-control {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.left-control {
+    border-right: 1px solid #000;
+}
+
+.right-control {
+    border-left: 1px solid #000;
+}
+
+.btn {
+    border: none;
+    color: white;
+    font-size: 4rem;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 0;
+    /* 移除圆角以消除缝隙 */
+    outline: none;
+    transition: background-color 0.1s;
+}
+
+.color-red {
+    color: #ff4757 !important;
+}
+
+.color-blue {
+    color: #1e90ff !important;
+}
+
+.bg-red {
+    background-color: #ff4757 !important;
+}
+
+.bg-red:active {
+    background-color: #ff6b81 !important;
+}
+
+.bg-dark-red {
+    background-color: #c0392b !important;
+}
+
+.bg-dark-red:active {
+    background-color: #e74c3c !important;
+}
+
+.bg-blue {
+    background-color: #1e90ff !important;
+}
+
+.bg-blue:active {
+    background-color: #70a1ff !important;
+}
+
+.bg-dark-blue {
+    background-color: #2980b9 !important;
+}
+
+.bg-dark-blue:active {
+    background-color: #3498db !important;
+}
+
+/* 按钮基础样式调整 */
+.add-btn {
+    flex: 6;
+    /* 占 60% 高度 (原来是 70%) */
+}
+
+.sub-btn {
+    flex: 4;
+    /* 占 40% 高度 (原来是 30%) */
+    font-size: 3rem;
+}
+
+/* 底部状态栏 */
+.bottom-status-bar {
+    background-color: #111;
+    color: #666;
+    font-size: 0.75rem;
+    text-align: center;
+    padding: 8px 0 15px 0;
+    /* 底部增加 15px 边距，防止在全面屏手机上太靠下 */
+    border-top: 1px solid #222;
+    flex: 0 0 auto;
+}
+
+/* 弹窗样式 */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    z-index: 100;
+}
+
+.modal-overlay.active {
+    display: block;
+}
+
+.modal-content {
+    background: #222;
+    padding: 20px;
+    width: 100%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border-bottom: 1px solid #444;
+}
+
+.swap-confirm-content {
+    /* 移除多余样式，完全继承 .modal-content */
+}
+
+.swap-confirm-content p {
+    text-align: center;
+    color: #ccc;
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+    padding: 10px 0;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.9rem;
+    color: #aaa;
+    margin-bottom: 8px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #444;
+    background: #111;
+    color: #fff;
+    font-size: 1.1rem;
+    outline: none;
+}
+
+.input-group input:focus {
+    border-color: #1e90ff;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.cancel-btn {
+    background: #444;
+    color: #fff;
+}
+
+.cancel-btn:active {
+    background: #555;
+}
+
+.save-btn {
+    background: #2ecc71;
+    color: #fff;
+}
+
+.save-btn:active {
+    background: #27ae60;
+}

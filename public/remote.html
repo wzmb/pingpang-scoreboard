@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>遥控器</title>
+    <link rel="stylesheet" href="remote.css">
+</head>
+
+<body>
+    <!-- 顶部状态栏 -->
+    <div class="status-bar">
+        <div class="team-name-btn left-name-btn color-red" id="left-name-display">主队</div>
+        <div class="status-center">
+            <button class="swap-btn" id="swap-btn" title="交换场地">⇄</button>
+        </div>
+        <div class="team-name-btn right-name-btn color-blue" id="right-name-display">客队</div>
+    </div>
+
+    <!-- 比分显示栏 -->
+    <div class="score-bar">
+        <div id="left-score-display" class="color-red">0</div>
+        <div class="center-controls">
+            <div id="sets-score-display" class="sets-score">0:0</div>
+            <div id="current-set-display" class="current-set">第 1 局</div>
+        </div>
+        <div id="right-score-display" class="color-blue">0</div>
+    </div>
+
+    <!-- 控制区域 -->
+    <div class="controls">
+        <!-- 左队控制 -->
+        <div class="team-control left-control">
+            <button class="btn add-btn bg-red" id="left-add">+1</button>
+            <button class="btn sub-btn bg-dark-red" id="left-sub">-1</button>
+        </div>
+
+        <!-- 右队控制 -->
+        <div class="team-control right-control">
+            <button class="btn add-btn bg-blue" id="right-add">+1</button>
+            <button class="btn sub-btn bg-dark-blue" id="right-sub">-1</button>
+        </div>
+    </div>
+
+    <!-- 底部状态栏 -->
+    <div class="bottom-status-bar">
+        <span id="server-status">连接中</span>
+    </div>
+
+    <!-- 修改队名弹窗 -->
+    <div class="modal-overlay" id="name-modal">
+        <div class="modal-content">
+            <div class="input-group">
+                <label id="label-left">左侧队伍名称 (红队)</label>
+                <input type="text" id="modal-left-input" maxlength="6" placeholder="输入左侧队名">
+            </div>
+            <div class="input-group">
+                <label id="label-right">右侧队伍名称 (蓝队)</label>
+                <input type="text" id="modal-right-input" maxlength="6" placeholder="输入右侧队名">
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel-btn" id="modal-cancel">取消</button>
+                <button class="modal-btn save-btn" id="modal-save">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 交换场地确认弹窗 -->
+    <div class="modal-overlay" id="swap-modal">
+        <div class="modal-content swap-confirm-content">
+            <p>确定要交换两队的位置和分数吗？</p>
+            <div class="modal-actions">
+                <button class="modal-btn cancel-btn" id="swap-cancel">取消</button>
+                <button class="modal-btn save-btn" id="swap-confirm">确定交换</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="remote.js"></script>
+</body>
+
+</html>
