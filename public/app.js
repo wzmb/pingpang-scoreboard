@@ -43,8 +43,12 @@ async function init() {
     // 生成遥控器 URL
     const remoteUrl = `http://${config.ip}:${config.port}/remote.html?room=${roomId}`;
 
+    // 清除旧二维码
+    const qrcodeEl = document.getElementById('qrcode');
+    qrcodeEl.innerHTML = '';
+
     // 生成二维码 (尺寸缩小一半，即面积1/4)
-    new QRCode(document.getElementById("qrcode"), {
+    new QRCode(qrcodeEl, {
         text: remoteUrl,
         width: 100,
         height: 100,
@@ -52,6 +56,25 @@ async function init() {
         colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.L // 缩小尺寸后，降低纠错级别让二维码点阵变大，更容易扫
     });
+
+    // 移除 QRCode 库自动生成的 title 属性，防止悬停出现系统提示框
+    // QRCode.js 会将 title 添加到传入的容器 div 上，因此直接移除 div 上的 title
+    qrcodeEl.removeAttribute('title');
+
+    // 延时移除 img 上的 title（部分浏览器或异步渲染可能导致立即移除失败）
+    setTimeout(() => {
+        qrcodeEl.removeAttribute('title');
+        const qrImage = qrcodeEl.querySelector('img');
+        if (qrImage) {
+            qrImage.removeAttribute('title');
+        }
+    }, 50);
+
+    // 将网址显示在文本容器中
+    const qrUrlTextEl = document.getElementById('qr-url-text');
+    if (qrUrlTextEl) {
+        qrUrlTextEl.innerHTML = `扫描二维码打开遥控界面<br><span class="url-link">${remoteUrl}</span>`;
+    }
 
     // 加入房间
     socket.emit('join-screen', roomId);

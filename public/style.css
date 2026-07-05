@@ -201,18 +201,24 @@ body {
     z-index: 10;
 }
 
+/* 右下角二维码面板 */
 .qr-panel {
     position: absolute;
-    bottom: 20px;
-    right: 20px;
-    background: white;
-    padding: 5px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    bottom: 30px;
+    right: 30px;
+    /* background: rgba(0, 0, 0, 0.8); */
+    padding: 10px;
+    border-radius: 15px;
     z-index: 10;
     opacity: 0.5;
-    /* 半透明，降低存在感 */
-    transition: opacity 0.5s ease;
+    /* 常驻半透明 */
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    display: flex;
+    align-items: flex-end;
+    /* 与二维码底部对齐 */
+    gap: 15px;
+    width: 400px;
+    /* 限制固定宽度 */
 }
 
 .qr-panel.hidden {
@@ -223,9 +229,33 @@ body {
 
 .qr-panel:hover {
     opacity: 1;
-    /* 鼠标悬浮时恢复清晰 */
+    transform: scale(1.05);
+}
+
+.qr-url-text {
+    color: #888;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    text-align: right;
+    /* 文本靠右对齐靠近二维码 */
+    flex: 1;
+    /* 占据剩余宽度 */
+    /* 允许文本自然换行 */
+}
+
+.qr-url-text .url-link {
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: #555;
+    word-break: break-all;
+    /* 网址过长时强制换行 */
 }
 
 #qrcode {
     display: block;
+    background: white;
+    padding: 5px;
+    border-radius: 5px;
+    /* 双重保险：禁用图片上的鼠标事件，防止浏览器强制显示 title tooltip */
+    pointer-events: none;
 }
