@@ -1,13 +1,18 @@
 {
-    "name": "table-tennis-scoreboard",
-    "version": "1.0.0",
-    "description": "Local LAN table tennis scoreboard",
-    "main": "server.js",
-    "scripts": {
-        "start": "node server.js"
-    },
-    "dependencies": {
-        "express": "^4.18.2",
-        "socket.io": "^4.7.2"
-    }
+  "name": "table-tennis-scoreboard",
+  "version": "1.0.0",
+  "description": "Local LAN table tennis scoreboard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2"
+  },
+  "devDependencies": {
+    "wrangler": "^4.107.0"
+  }
 }
