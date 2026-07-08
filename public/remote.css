@@ -271,11 +271,13 @@ body {
     border-bottom: 1px solid #444;
 }
 
-.swap-confirm-content {
+.swap-confirm-content,
+.reset-confirm-content {
     /* 移除多余样式，完全继承 .modal-content */
 }
 
-.swap-confirm-content p {
+.swap-confirm-content p,
+.reset-confirm-content p {
     text-align: center;
     color: #ccc;
     font-size: 1.1rem;

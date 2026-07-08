@@ -36,6 +36,11 @@ const swapModal = document.getElementById('swap-modal');
 const swapCancelBtn = document.getElementById('swap-cancel');
 const swapConfirmBtn = document.getElementById('swap-confirm');
 
+// 重置比赛相关元素
+const resetModal = document.getElementById('reset-modal');
+const resetCancelBtn = document.getElementById('reset-cancel');
+const resetConfirmBtn = document.getElementById('reset-confirm');
+
 if (!roomId) {
     statusEl.innerText = '无效的房间ID';
     statusEl.style.color = 'red';
@@ -253,9 +258,16 @@ if (!roomId) {
     const remoteSwitchServerBtn = document.getElementById('remote-switch-server-btn');
 
     remoteResetBtn.addEventListener('click', () => {
-        if (confirm('确定要重置整场比赛吗？')) {
-            socket.emit('command', { roomId, action: 'reset-match' });
-        }
+        resetModal.classList.add('active');
+    });
+
+    resetCancelBtn.addEventListener('click', () => {
+        resetModal.classList.remove('active');
+    });
+
+    resetConfirmBtn.addEventListener('click', () => {
+        socket.emit('command', { roomId, action: 'reset-match' });
+        resetModal.classList.remove('active');
     });
 
     remoteSwitchServerBtn.addEventListener('click', () => {

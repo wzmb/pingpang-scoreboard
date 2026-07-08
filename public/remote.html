@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>乒乓球计分遥控器</title>
     <link rel="stylesheet" href="remote.css">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
 </head>
 
 <body>
@@ -79,6 +80,17 @@
             <div class="modal-actions">
                 <button class="modal-btn save-btn" id="swap-confirm">确定交换</button>
                 <button class="modal-btn cancel-btn" id="swap-cancel">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 重置比赛确认弹窗 -->
+    <div class="modal-overlay" id="reset-modal">
+        <div class="modal-content reset-confirm-content">
+            <p>确定要重置整场比赛吗？</p>
+            <div class="modal-actions">
+                <button class="modal-btn save-btn" id="reset-confirm">确定重置</button>
+                <button class="modal-btn cancel-btn" id="reset-cancel">取消</button>
             </div>
         </div>
     </div>
