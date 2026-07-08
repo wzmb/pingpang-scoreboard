@@ -79,7 +79,7 @@ async function init() {
     // 将网址显示在文本容器中
     const qrUrlTextEl = document.getElementById('qr-url-text');
     if (qrUrlTextEl) {
-        qrUrlTextEl.innerHTML = `扫描二维码打开遥控界面<br><span class="url-link">${remoteUrl}</span>`;
+        qrUrlTextEl.innerHTML = `1. 连接“主端手机”Wi-Fi热点<br>2. 扫描右侧二维码，打开遥控界面<br><span class="url-link">${remoteUrl}</span>`;
     }
 
     // 加入房间
