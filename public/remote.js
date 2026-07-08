@@ -149,8 +149,12 @@ if (!roomId) {
     }
 
     function saveNames() {
-        let leftName = modalLeftInput.value.trim() || '红队';
-        let rightName = modalRightInput.value.trim() || '蓝队';
+        // 如果输入为空，则根据当前是否交换过场地，回退到对应的默认颜色名称
+        let defaultLeft = currentIsSwapped ? '蓝队' : '红队';
+        let defaultRight = currentIsSwapped ? '红队' : '蓝队';
+
+        let leftName = modalLeftInput.value.trim() || defaultLeft;
+        let rightName = modalRightInput.value.trim() || defaultRight;
 
         // 发送给服务器的是物理显示上的名字，服务器 app.js 在 state 中存的就是物理显示名字
         // 但是 app.js 里的 swap 逻辑是如果 swapped，会反转数据。
