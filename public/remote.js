@@ -26,8 +26,8 @@ const modalSaveBtn = document.getElementById('modal-save');
 const modalCancelBtn = document.getElementById('modal-cancel');
 
 // 缓存最新的状态，供弹窗使用
-let currentLeftName = '主队';
-let currentRightName = '客队';
+let currentLeftName = '红队';
+let currentRightName = '蓝队';
 let currentIsSwapped = false;
 
 // 交换场地相关元素
@@ -57,8 +57,8 @@ if (!roomId) {
         leftScoreEl.innerText = state.leftScore;
         rightScoreEl.innerText = state.rightScore;
 
-        currentLeftName = state.leftName || '主队';
-        currentRightName = state.rightName || '客队';
+        currentLeftName = state.leftName || '红队';
+        currentRightName = state.rightName || '蓝队';
         currentIsSwapped = state.isSwapped || false;
 
         leftNameDisplay.innerText = currentLeftName;
@@ -127,16 +127,16 @@ if (!roomId) {
         const rightLabel = document.getElementById('label-right');
 
         if (currentIsSwapped) {
-            leftLabel.innerText = "左侧队伍名称 (蓝队)";
-            rightLabel.innerText = "右侧队伍名称 (红队)";
+            leftLabel.innerText = "左侧队名 (蓝队)";
+            rightLabel.innerText = "右侧队名 (红队)";
         } else {
-            leftLabel.innerText = "左侧队伍名称 (红队)";
-            rightLabel.innerText = "右侧队伍名称 (蓝队)";
+            leftLabel.innerText = "左侧队名 (红队)";
+            rightLabel.innerText = "右侧队名 (蓝队)";
         }
 
         // 弹窗里的左输入框对应屏幕左边的队伍，右输入框对应屏幕右边的队伍
-        modalLeftInput.value = currentLeftName === '主队' || currentLeftName === '客队' ? '' : currentLeftName;
-        modalRightInput.value = currentRightName === '主队' || currentRightName === '客队' ? '' : currentRightName;
+        modalLeftInput.value = currentLeftName === '红队' || currentLeftName === '蓝队' ? '' : currentLeftName;
+        modalRightInput.value = currentRightName === '红队' || currentRightName === '蓝队' ? '' : currentRightName;
 
         modal.classList.add('active');
     }
@@ -149,8 +149,8 @@ if (!roomId) {
     }
 
     function saveNames() {
-        let leftName = modalLeftInput.value.trim() || '主队';
-        let rightName = modalRightInput.value.trim() || '客队';
+        let leftName = modalLeftInput.value.trim() || '红队';
+        let rightName = modalRightInput.value.trim() || '蓝队';
 
         // 发送给服务器的是物理显示上的名字，服务器 app.js 在 state 中存的就是物理显示名字
         // 但是 app.js 里的 swap 逻辑是如果 swapped，会反转数据。

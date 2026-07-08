@@ -7,8 +7,8 @@ let state = {
     leftSets: 0,
     rightSets: 0,
     server: 'left', // 'left' 或 'right'
-    leftName: '主队',
-    rightName: '客队',
+    leftName: '红队',
+    rightName: '蓝队',
     isSwapped: false,
     currentSetDecided: false, // 标记当前局是否已决出胜负
     lastSetWinner: null, // 记录当前局的胜者，用于撤销局分
@@ -188,8 +188,8 @@ function updateUI() {
     rightSetsEl.innerText = state.rightSets;
 
     // 更新队伍名称
-    leftNameEl.innerText = state.leftName || '主队';
-    rightNameEl.innerText = state.rightName || '客队';
+    leftNameEl.innerText = state.leftName || '红队';
+    rightNameEl.innerText = state.rightName || '蓝队';
 
     // 更新颜色类名 (大屏背景色、文字颜色等通过 CSS 类控制)
     if (state.isSwapped) {
@@ -320,8 +320,8 @@ function performReset() {
         leftSets: 0,
         rightSets: 0,
         server: 'left',
-        leftName: '主队',
-        rightName: '客队',
+        leftName: '红队',
+        rightName: '蓝队',
         isSwapped: false,
         currentSetDecided: false,
         lastSetWinner: null,
