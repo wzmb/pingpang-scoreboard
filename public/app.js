@@ -9,7 +9,10 @@ let state = {
     server: 'left', // 'left' 或 'right'
     leftName: '主队',
     rightName: '客队',
-    isSwapped: false
+    isSwapped: false,
+    currentSetDecided: false, // 标记当前局是否已决出胜负
+    lastSetWinner: null, // 记录当前局的胜者，用于撤销局分
+    serverOffset: 0 // 手动换发球方的偏移量
 };
 
 // 生成唯一的房间ID
@@ -87,30 +90,54 @@ async function init() {
 // 计算发球权
 function calculateServer() {
     const totalPoints = state.leftScore + state.rightScore;
+    let isLeftServing = true;
 
     // 如果是 10-10 之后的平局阶段 (Deuce)，每球换发
     if (state.leftScore >= 10 && state.rightScore >= 10) {
-        // 每 1 分换发球
-        return totalPoints % 2 === 0 ? 'left' : 'right';
+        isLeftServing = totalPoints % 2 === 0;
     } else {
         // 正常阶段，每 2 分换发球
-        // 假设初始发球方为左侧，如果是右侧可以加一个 offset
         const serveTurn = Math.floor(totalPoints / 2);
-        return serveTurn % 2 === 0 ? 'left' : 'right';
+        isLeftServing = serveTurn % 2 === 0;
     }
+
+    // 应用手动换发球的偏移量
+    if ((state.serverOffset || 0) % 2 !== 0) {
+        isLeftServing = !isLeftServing;
+    }
+
+    return isLeftServing ? 'left' : 'right';
 }
 
 // 检查是否有人胜出这局
 function checkGameWin() {
     if ((state.leftScore >= 11 || state.rightScore >= 11) && Math.abs(state.leftScore - state.rightScore) >= 2) {
-        if (state.leftScore > state.rightScore) {
-            state.leftSets += 1;
-        } else {
-            state.rightSets += 1;
+        // 判断是谁刚刚赢得了这一局（分数大的那一方）
+        // 只有当局分还没有增加过（即刚好达到赢局条件时），才增加局分
+        // 并且不再自动清零比分
+
+        // 我们需要一个标记来知道当前这一局是否已经计算过局分
+        if (!state.currentSetDecided) {
+            if (state.leftScore > state.rightScore) {
+                state.leftSets += 1;
+                state.lastSetWinner = 'left';
+            } else {
+                state.rightSets += 1;
+                state.lastSetWinner = 'right';
+            }
+            state.currentSetDecided = true; // 标记本局已分出胜负
         }
-        // 新一局开始，比分清零
-        state.leftScore = 0;
-        state.rightScore = 0;
+    } else {
+        // 如果比分回退到未分出胜负的状态（比如点错了减分），取消标记并撤销局分
+        if (state.currentSetDecided) {
+            if (state.lastSetWinner === 'left' && state.leftSets > 0) {
+                state.leftSets -= 1;
+            } else if (state.lastSetWinner === 'right' && state.rightSets > 0) {
+                state.rightSets -= 1;
+            }
+            state.currentSetDecided = false;
+            state.lastSetWinner = null;
+        }
     }
 }
 
@@ -131,6 +158,12 @@ function updateScoreWithFlip(el, newVal) {
     // 动画时长为 300ms，在 150ms（刚好翻转到 90 度不可见时）替换数字
     el.flipTimeout1 = setTimeout(() => {
         el.innerText = newVal;
+        // 判断是否为两位数及以上
+        if (newVal >= 10) {
+            el.classList.add('two-digits');
+        } else {
+            el.classList.remove('two-digits');
+        }
     }, 150);
 
     // 动画结束移除 class
@@ -143,6 +176,13 @@ function updateScoreWithFlip(el, newVal) {
 function updateUI() {
     updateScoreWithFlip(leftScoreEl, state.leftScore);
     updateScoreWithFlip(rightScoreEl, state.rightScore);
+
+    // 初始化时也需要检查是否需要加上 two-digits 类
+    if (state.leftScore >= 10) leftScoreEl.classList.add('two-digits');
+    else leftScoreEl.classList.remove('two-digits');
+
+    if (state.rightScore >= 10) rightScoreEl.classList.add('two-digits');
+    else rightScoreEl.classList.remove('two-digits');
 
     leftSetsEl.innerText = state.leftSets;
     rightSetsEl.innerText = state.rightSets;
@@ -199,14 +239,38 @@ socket.on('command', (action) => {
             checkGameWin();
             break;
         case 'left-sub':
-            if (state.leftScore > 0) state.leftScore--;
+            if (state.leftScore > 0) {
+                state.leftScore--;
+                checkGameWin(); // 减分时也需要检查，可能会撤销刚刚赢下的一局
+            }
             break;
         case 'right-add':
             state.rightScore++;
             checkGameWin();
             break;
         case 'right-sub':
-            if (state.rightScore > 0) state.rightScore--;
+            if (state.rightScore > 0) {
+                state.rightScore--;
+                checkGameWin(); // 减分时也需要检查
+            }
+            break;
+        case 'next-set':
+            if (state.currentSetDecided) {
+                state.leftScore = 0;
+                state.rightScore = 0;
+                state.currentSetDecided = false;
+                state.lastSetWinner = null;
+                state.serverOffset = (state.serverOffset || 0) + 1; // 下一局自动换发球方
+            }
+            break;
+        case 'reset-match':
+            performReset();
+            break;
+        case 'toggle-fullscreen':
+            toggleFullscreen();
+            break;
+        case 'switch-server':
+            state.serverOffset = (state.serverOffset || 0) + 1;
             break;
     }
     updateUI();
@@ -238,30 +302,41 @@ socket.on('swap-teams', () => {
         leftName: state.rightName,
         rightName: state.leftName,
         server: state.server === 'left' ? 'right' : 'left',
-        isSwapped: !state.isSwapped
+        isSwapped: !state.isSwapped,
+        currentSetDecided: state.currentSetDecided,
+        lastSetWinner: state.lastSetWinner === 'left' ? 'right' : (state.lastSetWinner === 'right' ? 'left' : null),
+        serverOffset: state.serverOffset
     };
 
     state = tempState;
     updateUI();
 });
 
+// 执行重置比赛逻辑
+function performReset() {
+    state = {
+        leftScore: 0,
+        rightScore: 0,
+        leftSets: 0,
+        rightSets: 0,
+        server: 'left',
+        leftName: '主队',
+        rightName: '客队',
+        isSwapped: false,
+        currentSetDecided: false,
+        lastSetWinner: null,
+        serverOffset: 0
+    };
+    updateUI();
+
+    // 重置后重新聚焦到页面
+    document.body.focus();
+}
+
 // 重置比赛
 resetBtn.addEventListener('click', () => {
     if (confirm('确定要重置整场比赛吗？')) {
-        state = {
-            leftScore: 0,
-            rightScore: 0,
-            leftSets: 0,
-            rightSets: 0,
-            server: 'left',
-            leftName: state.isSwapped ? state.rightName : state.leftName, // 恢复原始的主客队名对应关系
-            rightName: state.isSwapped ? state.leftName : state.rightName,
-            isSwapped: false
-        };
-        updateUI();
-
-        // 重置后重新聚焦到页面
-        document.body.focus();
+        performReset();
     }
 });
 

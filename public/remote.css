@@ -170,6 +170,11 @@ body {
     transition: background-color 0.1s;
 }
 
+.btn.next-set-mode {
+    font-size: 2.5rem;
+    letter-spacing: 2px;
+}
+
 .color-red {
     color: #ff4757 !important;
 }
@@ -328,4 +333,34 @@ body {
 
 .save-btn:active {
     background: #27ae60;
+}
+
+/* 系统控制栏 */
+.sys-controls-bar {
+    display: flex;
+    background-color: #1a1a1a;
+    border-top: 1px solid #333;
+    border-bottom: 1px solid #333;
+}
+
+.sys-btn {
+    flex: 1;
+    background: transparent;
+    color: #ddd;
+    border: none;
+    padding: 15px 0;
+    font-size: 1.1rem;
+    cursor: pointer;
+    outline: none;
+    border-right: 1px solid #333;
+    transition: background-color 0.2s;
+}
+
+.sys-btn:last-child {
+    border-right: none;
+}
+
+.sys-btn:active {
+    background: #333;
+    color: #fff;
 }

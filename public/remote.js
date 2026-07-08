@@ -104,6 +104,20 @@ if (!roomId) {
             rightAddBtn.className = 'btn add-btn bg-blue';
             rightSubBtn.className = 'btn sub-btn bg-dark-blue';
         }
+
+        // 处理下一局按钮逻辑
+        if (state.currentSetDecided) {
+            leftAddBtn.innerText = '下一局';
+            rightAddBtn.innerText = '下一局';
+            leftAddBtn.classList.add('next-set-mode');
+            rightAddBtn.classList.add('next-set-mode');
+        } else {
+            leftAddBtn.innerText = '+1';
+            rightAddBtn.innerText = '+1';
+            // className 赋值已经清除了之前的 class，这里以防万一还是 remove 一下
+            leftAddBtn.classList.remove('next-set-mode');
+            rightAddBtn.classList.remove('next-set-mode');
+        }
     });
 
     // 弹窗控制逻辑
@@ -184,7 +198,12 @@ if (!roomId) {
                 if (isCooldown) return;
 
                 if (socket.connected) {
-                    socket.emit('command', { roomId, action });
+                    let finalAction = action;
+                    // 如果当前是“下一局”状态，且点击的是加分按钮，则发送 next-set 命令
+                    if (btn.classList.contains('next-set-mode') && (action === 'left-add' || action === 'right-add')) {
+                        finalAction = 'next-set';
+                    }
+                    socket.emit('command', { roomId, action: finalAction });
                     // 触觉反馈 (如果设备支持)
                     if (navigator.vibrate) {
                         navigator.vibrate(50);
@@ -198,5 +217,19 @@ if (!roomId) {
                 }
             });
         }
+    });
+
+    // 系统控制按钮 (重置、换发球方)
+    const remoteResetBtn = document.getElementById('remote-reset-btn');
+    const remoteSwitchServerBtn = document.getElementById('remote-switch-server-btn');
+
+    remoteResetBtn.addEventListener('click', () => {
+        if (confirm('确定要重置整场比赛吗？')) {
+            socket.emit('command', { roomId, action: 'reset-match' });
+        }
+    });
+
+    remoteSwitchServerBtn.addEventListener('click', () => {
+        socket.emit('command', { roomId, action: 'switch-server' });
     });
 }

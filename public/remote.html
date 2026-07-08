@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>遥控器</title>
+    <title>乒乓球计分遥控器</title>
     <link rel="stylesheet" href="remote.css">
 </head>
 
@@ -43,6 +43,12 @@
         </div>
     </div>
 
+    <!-- 系统控制栏 -->
+    <div class="sys-controls-bar">
+        <button id="remote-reset-btn" class="sys-btn">重置比赛</button>
+        <button id="remote-switch-server-btn" class="sys-btn">换发球方</button>
+    </div>
+
     <!-- 底部状态栏 -->
     <div class="bottom-status-bar">
         <span id="server-status">连接中</span>
@@ -77,7 +83,7 @@
         </div>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="remote.js"></script>
 </body>
 

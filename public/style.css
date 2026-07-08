@@ -100,10 +100,10 @@ body {
 }
 
 .team-name {
-    font-size: 3rem;
+    font-size: 6rem;
     font-weight: bold;
     position: absolute;
-    top: 30px;
+    top: 40px;
     display: flex;
     align-items: center;
     gap: 15px;
@@ -136,13 +136,40 @@ body {
     margin-bottom: 0;
     font-variant-numeric: tabular-nums;
     transform-style: preserve-3d;
-    transition: text-decoration 0.2s ease-in;
+    transition: letter-spacing 0.3s ease, transform 0.3s ease;
+    --scale-x: 1;
+    transform: scaleX(var(--scale-x));
+    position: relative;
 }
 
-.is-serving {
-    text-decoration: underline;
-    text-underline-offset: 30px;
-    text-decoration-thickness: 10px;
+.score::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -30px;
+    height: 10px;
+    background-color: currentColor;
+    width: 100%;
+    opacity: 0;
+    transition: opacity 0.2s ease-in, width 0.3s ease;
+}
+
+/* 当有 flipping 动画时，强制隐藏下划线，不让其参与翻转，翻转结束后恢复 */
+.score.flipping::after {
+    display: none;
+}
+
+.score.is-serving::after {
+    opacity: 1;
+}
+
+.score.two-digits {
+    --scale-x: 0.65;
+    letter-spacing: -4vw;
+}
+
+.score.two-digits::after {
+    width: calc(100% + 4vw);
 }
 
 .score.flipping {
@@ -151,17 +178,17 @@ body {
 
 @keyframes flipAnim {
     0% {
-        transform: rotateX(0deg);
+        transform: scaleX(var(--scale-x)) rotateX(0deg);
         opacity: 1;
     }
 
     50% {
-        transform: rotateX(90deg);
+        transform: scaleX(var(--scale-x)) rotateX(90deg);
         opacity: 0;
     }
 
     100% {
-        transform: rotateX(0deg);
+        transform: scaleX(var(--scale-x)) rotateX(0deg);
         opacity: 1;
     }
 }
@@ -171,13 +198,13 @@ body {
 .right-team .score {}
 
 .sets {
-    font-size: 2.5rem;
+    font-size: 5rem;
     color: #aaa;
     background: #333;
-    padding: 10px 30px;
+    padding: 15px 40px;
     border-radius: 50px;
     position: absolute;
-    top: 30px;
+    top: 40px;
 }
 
 .left-team .sets {
