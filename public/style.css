@@ -286,3 +286,152 @@ body {
     /* 双重保险：禁用图片上的鼠标事件，防止浏览器强制显示 title tooltip */
     pointer-events: none;
 }
+
+/* 历史记录蒙层 */
+.history-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.history-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.history-table {
+    border-collapse: collapse;
+    font-size: 7rem;
+    color: #fff;
+    text-align: center;
+    width: 80%;
+    max-width: 1400px;
+}
+
+.history-table th,
+.history-table td {
+    padding: 30px 50px;
+}
+
+.history-table th {
+    color: #aaa;
+    font-weight: normal;
+    font-size: 5rem;
+    border-bottom: 2px solid #fff;
+}
+
+.history-table th:first-child,
+.history-table td:first-child {
+    text-align: left;
+    font-weight: bold;
+    width: 25%;
+    white-space: nowrap;
+    /* 确保队名不折行 */
+}
+
+/* 确保颜色类能够作用于所有需要的元素 */
+.color-red {
+    color: #ff4757;
+}
+
+.color-blue {
+    color: #1e90ff;
+}
+
+.score-winner {
+    display: inline-block;
+    padding: 5px 15px;
+    border-radius: 12px;
+    line-height: 1;
+    color: #fff;
+}
+
+.score-winner.bg-red {
+    background-color: #ff4757;
+}
+
+.score-winner.bg-blue {
+    background-color: #1e90ff;
+}
+
+/* 大屏弹窗样式 */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-content {
+    background: #222;
+    padding: 50px 80px;
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+    text-align: center;
+    border: 1px solid #444;
+}
+
+.modal-content p {
+    font-size: 2.5rem;
+    color: #fff;
+    margin-bottom: 50px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+}
+
+.modal-btn {
+    padding: 15px 40px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.8rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cancel-btn {
+    background: #444;
+    color: #fff;
+}
+
+.cancel-btn:hover {
+    background: #555;
+}
+
+.save-btn {
+    background: #ff4757;
+    color: #fff;
+}
+
+.save-btn:hover {
+    background: #ff6b81;
+}

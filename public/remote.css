@@ -79,6 +79,14 @@ body {
     align-items: center;
     justify-content: center;
     gap: 3px;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 10px;
+    transition: background-color 0.2s;
+}
+
+.center-controls:active {
+    background-color: #333;
 }
 
 .sets-score {

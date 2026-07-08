@@ -12,7 +12,9 @@ let state = {
     isSwapped: false,
     currentSetDecided: false, // 标记当前局是否已决出胜负
     lastSetWinner: null, // 记录当前局的胜者，用于撤销局分
-    serverOffset: 0 // 手动换发球方的偏移量
+    serverOffset: 0, // 手动换发球方的偏移量
+    matchHistory: [], // 记录每局比分
+    showHistory: false // 是否显示历史记录
 };
 
 // 生成唯一的房间ID
@@ -30,6 +32,7 @@ const rightServeEl = document.getElementById('right-serve');
 const leftNameEl = document.getElementById('left-name');
 const rightNameEl = document.getElementById('right-name');
 const qrPanel = document.getElementById('qr-panel');
+const historyBtn = document.getElementById('history-btn');
 const resetBtn = document.getElementById('reset-btn');
 const fullscreenBtn = document.getElementById('fullscreen-btn');
 const topControls = document.querySelector('.top-controls');
@@ -226,12 +229,93 @@ function updateUI() {
 
     // 同步给遥控器
     socket.emit('sync-state', { roomId, state });
+
+    // 渲染历史记录蒙层
+    renderHistory();
+}
+
+// 渲染比赛历史
+function renderHistory() {
+    const historyOverlay = document.getElementById('history-overlay');
+    if (!historyOverlay) return;
+
+    if (!state.showHistory) {
+        historyOverlay.classList.add('hidden');
+        return;
+    }
+    historyOverlay.classList.remove('hidden');
+
+    const headerTr = document.getElementById('history-header');
+    const row1Tr = document.getElementById('history-row-1');
+    const row2Tr = document.getElementById('history-row-2');
+
+    // 获取逻辑队名（物理左侧永远对应初始状态的左侧/红队）
+    const logicalLeftName = state.isSwapped ? state.rightName : state.leftName;
+    const logicalRightName = state.isSwapped ? state.leftName : state.rightName;
+
+    // 清空现有内容，重新拼接
+    let headerHTML = '<th></th>';
+    let row1HTML = `<td class="team-label color-red">${logicalLeftName}</td>`;
+    let row2HTML = `<td class="team-label color-blue">${logicalRightName}</td>`;
+
+    // 渲染已完成的局
+    const history = state.matchHistory || [];
+    history.forEach((h, index) => {
+        headerHTML += `<th>${index + 1}</th>`;
+
+        // 判断哪方胜出
+        const leftWon = h.logicalLeftScore > h.logicalRightScore;
+        const rightWon = h.logicalRightScore > h.logicalLeftScore;
+
+        const leftScoreDisplay = leftWon ? `<span class="score-winner bg-red">${h.logicalLeftScore}</span>` : h.logicalLeftScore;
+        const rightScoreDisplay = rightWon ? `<span class="score-winner bg-blue">${h.logicalRightScore}</span>` : h.logicalRightScore;
+
+        row1HTML += `<td>${leftScoreDisplay}</td>`;
+        row2HTML += `<td>${rightScoreDisplay}</td>`;
+    });
+
+    // 渲染当前局
+    headerHTML += `<th>${history.length + 1}</th>`;
+    const currentLogicalLeftScore = state.isSwapped ? state.rightScore : state.leftScore;
+    const currentLogicalRightScore = state.isSwapped ? state.leftScore : state.rightScore;
+
+    // 如果当前局已决出胜负，也需要给当前局的胜者加背景块
+    let currentLeftScoreDisplay = currentLogicalLeftScore;
+    let currentRightScoreDisplay = currentLogicalRightScore;
+
+    if (state.currentSetDecided) {
+        const currentLeftWon = currentLogicalLeftScore > currentLogicalRightScore;
+        const currentRightWon = currentLogicalRightScore > currentLogicalLeftScore;
+
+        currentLeftScoreDisplay = currentLeftWon ? `<span class="score-winner bg-red">${currentLogicalLeftScore}</span>` : currentLogicalLeftScore;
+        currentRightScoreDisplay = currentRightWon ? `<span class="score-winner bg-blue">${currentLogicalRightScore}</span>` : currentLogicalRightScore;
+    }
+
+    row1HTML += `<td>${currentLeftScoreDisplay}</td>`;
+    row2HTML += `<td>${currentRightScoreDisplay}</td>`;
+
+    // 渲染最后一列：当前局分
+    headerHTML += `<th></th>`;
+    const logicalLeftSets = state.isSwapped ? state.rightSets : state.leftSets;
+    const logicalRightSets = state.isSwapped ? state.leftSets : state.rightSets;
+
+    row1HTML += `<td class="color-red">${logicalLeftSets}</td>`;
+    row2HTML += `<td class="color-blue">${logicalRightSets}</td>`;
+
+    headerTr.innerHTML = headerHTML;
+    row1Tr.innerHTML = row1HTML;
+    row2Tr.innerHTML = row2HTML;
 }
 
 // 监听遥控器命令
 socket.on('command', (action) => {
     // 只有大屏端才处理积分逻辑，防止多台设备重复计算
     if (!isScreen) return;
+
+    // 任何影响比分的操作都会自动关闭历史展示
+    if (action !== 'toggle-history' && action !== 'toggle-fullscreen') {
+        state.showHistory = false;
+    }
 
     switch (action) {
         case 'left-add':
@@ -254,8 +338,17 @@ socket.on('command', (action) => {
                 checkGameWin(); // 减分时也需要检查
             }
             break;
+        case 'wake-screen':
+            resetMouseTimer();
+            break;
         case 'next-set':
             if (state.currentSetDecided) {
+                // 将刚完成的这局分数记录到历史中 (永远记录逻辑红队/蓝队的得分)
+                state.matchHistory.push({
+                    logicalLeftScore: state.isSwapped ? state.rightScore : state.leftScore,
+                    logicalRightScore: state.isSwapped ? state.leftScore : state.rightScore
+                });
+
                 state.leftScore = 0;
                 state.rightScore = 0;
                 state.currentSetDecided = false;
@@ -271,6 +364,9 @@ socket.on('command', (action) => {
             break;
         case 'switch-server':
             state.serverOffset = (state.serverOffset || 0) + 1;
+            break;
+        case 'toggle-history':
+            state.showHistory = !state.showHistory;
             break;
     }
     updateUI();
@@ -305,7 +401,9 @@ socket.on('swap-teams', () => {
         isSwapped: !state.isSwapped,
         currentSetDecided: state.currentSetDecided,
         lastSetWinner: state.lastSetWinner === 'left' ? 'right' : (state.lastSetWinner === 'right' ? 'left' : null),
-        serverOffset: state.serverOffset
+        serverOffset: state.serverOffset,
+        matchHistory: state.matchHistory,
+        showHistory: state.showHistory
     };
 
     state = tempState;
@@ -325,7 +423,9 @@ function performReset() {
         isSwapped: false,
         currentSetDecided: false,
         lastSetWinner: null,
-        serverOffset: 0
+        serverOffset: 0,
+        matchHistory: [],
+        showHistory: false
     };
     updateUI();
 
@@ -333,20 +433,44 @@ function performReset() {
     document.body.focus();
 }
 
-// 重置比赛
+// 弹窗 DOM 元素
+const resetModal = document.getElementById('reset-modal');
+const resetCancelBtn = document.getElementById('reset-cancel');
+const resetConfirmBtn = document.getElementById('reset-confirm');
+
+// 触发重置弹窗
 resetBtn.addEventListener('click', () => {
-    if (confirm('确定要重置整场比赛吗？')) {
-        performReset();
-    }
+    resetModal.classList.add('active');
 });
 
-// 点击全屏区域外的交互逻辑已被清理
-// 原本点击隐藏二维码的逻辑已移除，因为二维码现在常驻右下角
+// 触发赛况总览
+historyBtn.addEventListener('click', () => {
+    state.showHistory = !state.showHistory;
+    updateUI();
+});
+
+// 取消重置
+resetCancelBtn.addEventListener('click', () => {
+    resetModal.classList.remove('active');
+    document.body.focus(); // 恢复焦点以便继续使用快捷键
+});
+
+// 确认重置
+resetConfirmBtn.addEventListener('click', () => {
+    performReset();
+    resetModal.classList.remove('active');
+});
 
 // 全屏切换逻辑
 function toggleFullscreen() {
     if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(err => {
+        document.documentElement.requestFullscreen().then(() => {
+            // 现代浏览器支持 Keyboard Lock API，锁定 ESC 键以防止其默认退出全屏
+            // 这样我们可以拦截 ESC 键，用来关闭弹窗而不是退出全屏
+            if (navigator.keyboard && navigator.keyboard.lock) {
+                navigator.keyboard.lock(['Escape']).catch(e => console.warn('Keyboard lock failed', e));
+            }
+        }).catch(err => {
             console.error(`Error attempting to enable fullscreen: ${err.message}`);
         });
     } else {
@@ -362,9 +486,34 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'f' || e.key === 'F') {
         toggleFullscreen();
     }
-    // 按 'r' 或 'R' 键重置比赛
+    // 按 'v' 或 'V' 键切换历史蒙层
+    if (e.key === 'v' || e.key === 'V') {
+        historyBtn.click();
+    }
+    // 按 'r' 或 'R' 键触发重置弹窗
     if (e.key === 'r' || e.key === 'R') {
-        resetBtn.click();
+        if (!resetModal.classList.contains('active')) {
+            resetBtn.click();
+        } else {
+            // 如果弹窗已显示，再次按 R 相当于点击“确定重置”
+            resetConfirmBtn.click();
+        }
+    }
+    // 按 'Escape' 键
+    if (e.key === 'Escape') {
+        if (resetModal.classList.contains('active')) {
+            // 如果展示了弹窗，只关闭弹窗
+            e.preventDefault();
+            resetCancelBtn.click();
+        } else if (state.showHistory) {
+            // 顺便支持：如果历史蒙层打开了，按 ESC 也能关闭历史蒙层
+            e.preventDefault();
+            state.showHistory = false;
+            updateUI();
+        } else if (document.fullscreenElement) {
+            // 如果没有任何弹窗，且处于全屏状态（且被我们 Lock 了 ESC），则手动退出全屏
+            document.exitFullscreen();
+        }
     }
 });
 
@@ -376,6 +525,10 @@ document.addEventListener('fullscreenchange', () => {
     } else {
         fullscreenBtn.innerText = '全屏显示 (F)';
         fullscreenBtn.title = '全屏显示 (F)';
+        // 退出全屏时释放键盘锁定
+        if (navigator.keyboard && navigator.keyboard.unlock) {
+            navigator.keyboard.unlock();
+        }
     }
 });
 
@@ -395,7 +548,7 @@ function resetMouseTimer() {
         if (document.fullscreenElement) {
             document.body.style.cursor = 'none';
         }
-    }, 3000);
+    }, 5000);
 }
 
 document.addEventListener('mousemove', resetMouseTimer);

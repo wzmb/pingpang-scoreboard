@@ -12,6 +12,7 @@
     <div class="scoreboard-container">
         <!-- 底部/顶部控制栏 -->
         <div class="top-controls">
+            <button class="icon-btn" id="history-btn" title="赛况总览 (V)">赛况总览 (V)</button>
             <button class="icon-btn" id="reset-btn" title="重置比赛 (R)">重置比赛 (R)</button>
             <button class="icon-btn" id="fullscreen-btn" title="全屏显示 (F)">全屏显示 (F)</button>
         </div>
@@ -46,6 +47,36 @@
                 <span id="right-sets">0</span>
             </div>
             <div class="score" id="right-score">0</div>
+        </div>
+    </div>
+
+    <!-- 比赛历史信息展示（半透明蒙层） -->
+    <div id="history-overlay" class="history-overlay hidden">
+        <table class="history-table">
+            <thead>
+                <tr id="history-header">
+                    <!-- 动态生成 -->
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="history-row-1">
+                    <!-- 动态生成 -->
+                </tr>
+                <tr id="history-row-2">
+                    <!-- 动态生成 -->
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 重置比赛确认弹窗 -->
+    <div class="modal-overlay" id="reset-modal">
+        <div class="modal-content">
+            <p>确定要重置整场比赛吗？</p>
+            <div class="modal-actions">
+                <button class="modal-btn save-btn" id="reset-confirm">确定重置</button>
+                <button class="modal-btn cancel-btn" id="reset-cancel">取消</button>
+            </div>
         </div>
     </div>
 

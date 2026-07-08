@@ -185,6 +185,31 @@ if (!roomId) {
         swapModal.classList.remove('active');
     });
 
+    // 点击比分数字唤醒大屏二维码及控制按钮
+    const scoreDisplays = ['left-score-display', 'right-score-display'];
+    scoreDisplays.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                if (socket.connected) {
+                    socket.emit('command', { roomId, action: 'wake-screen' });
+                }
+            });
+        }
+    });
+
+    // 点击中间局分区域展示/隐藏历史记录
+    const centerControls = document.querySelector('.center-controls');
+    if (centerControls) {
+        centerControls.addEventListener('click', () => {
+            if (socket.connected) {
+                socket.emit('command', { roomId, action: 'toggle-history' });
+                if (navigator.vibrate) navigator.vibrate(50);
+            }
+        });
+    }
+
     // 绑定按键事件
     const actions = ['left-add', 'left-sub', 'right-add', 'right-sub'];
 
