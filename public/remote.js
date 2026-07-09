@@ -57,55 +57,66 @@ if (!roomId) {
         statusEl.style.color = '#e74c3c';
     });
 
+    let lastState = null;
+    let remoteMappingReversed = false;
+
     // 接收大屏同步的状态
     socket.on('state-updated', (state) => {
-        leftScoreEl.innerText = state.leftScore;
-        rightScoreEl.innerText = state.rightScore;
+        lastState = state;
+        renderState();
+    });
 
-        currentLeftName = state.leftName || '红队';
-        currentRightName = state.rightName || '蓝队';
-        currentIsSwapped = state.isSwapped || false;
+    function renderState() {
+        if (!lastState) return;
+        const state = lastState;
+
+        const mappedLeftScore = remoteMappingReversed ? state.rightScore : state.leftScore;
+        const mappedRightScore = remoteMappingReversed ? state.leftScore : state.rightScore;
+        const mappedLeftName = remoteMappingReversed ? state.rightName : state.leftName;
+        const mappedRightName = remoteMappingReversed ? state.leftName : state.rightName;
+        const mappedLeftSets = remoteMappingReversed ? (state.rightSets || 0) : (state.leftSets || 0);
+        const mappedRightSets = remoteMappingReversed ? (state.leftSets || 0) : (state.rightSets || 0);
+
+        const isMappedLeftServing = remoteMappingReversed ? (state.server === 'right') : (state.server === 'left');
+        const isRemoteBlueOnLeft = state.isSwapped !== remoteMappingReversed;
+
+        leftScoreEl.innerText = mappedLeftScore;
+        rightScoreEl.innerText = mappedRightScore;
+
+        currentLeftName = mappedLeftName || '红队';
+        currentRightName = mappedRightName || '蓝队';
+        currentIsSwapped = isRemoteBlueOnLeft;
 
         leftNameDisplay.innerText = currentLeftName;
         rightNameDisplay.innerText = currentRightName;
 
-        // 计算并显示当前局数 (左队胜局 + 右队胜局 + 1)
-        const leftSets = state.leftSets || 0;
-        const rightSets = state.rightSets || 0;
-        const currentSet = leftSets + rightSets + 1;
-
+        // 计算并显示当前局数
+        const currentSet = mappedLeftSets + mappedRightSets + 1;
         currentSetDisplay.innerText = `第 ${currentSet} 局`;
 
-        // 显示大比分 (局分比)
-        // 注意：因为在大屏 app.js 的 swap-teams 逻辑中，state.leftSets 和 state.rightSets 已经被互换过了！
-        // 也就是说，服务器发来的 state.leftSets 永远对应着当前物理屏幕左边那支队伍的局分。
-        // 所以我们不需要在这里再反转一次，直接按照物理位置 left:right 显示即可。
-        setsScoreDisplay.innerText = `${leftSets}:${rightSets}`;
+        // 显示大比分
+        setsScoreDisplay.innerText = `${mappedLeftSets}:${mappedRightSets}`;
 
-        // 动态更新手机端的颜色
-        // state.server 记录的是逻辑上的左队(红)和右队(蓝)
-        const isLeftServing = state.server === 'left';
-
-        if (state.isSwapped) {
+        if (isRemoteBlueOnLeft) {
             // 物理交换后：左边是蓝队，右边是红队
             leftNameDisplay.className = 'team-name-btn left-name-btn color-blue';
-            leftScoreEl.className = 'color-blue' + (!isLeftServing ? ' is-serving' : '');
+            leftScoreEl.className = 'color-blue' + (!isMappedLeftServing ? ' is-serving' : '');
             leftAddBtn.className = 'btn add-btn bg-blue';
             leftSubBtn.className = 'btn sub-btn bg-dark-blue';
 
             rightNameDisplay.className = 'team-name-btn right-name-btn color-red';
-            rightScoreEl.className = 'color-red' + (isLeftServing ? ' is-serving' : '');
+            rightScoreEl.className = 'color-red' + (isMappedLeftServing ? ' is-serving' : '');
             rightAddBtn.className = 'btn add-btn bg-red';
             rightSubBtn.className = 'btn sub-btn bg-dark-red';
         } else {
             // 物理默认状态：左边是红队，右边是蓝队
             leftNameDisplay.className = 'team-name-btn left-name-btn color-red';
-            leftScoreEl.className = 'color-red' + (isLeftServing ? ' is-serving' : '');
+            leftScoreEl.className = 'color-red' + (isMappedLeftServing ? ' is-serving' : '');
             leftAddBtn.className = 'btn add-btn bg-red';
             leftSubBtn.className = 'btn sub-btn bg-dark-red';
 
             rightNameDisplay.className = 'team-name-btn right-name-btn color-blue';
-            rightScoreEl.className = 'color-blue' + (!isLeftServing ? ' is-serving' : '');
+            rightScoreEl.className = 'color-blue' + (!isMappedLeftServing ? ' is-serving' : '');
             rightAddBtn.className = 'btn add-btn bg-blue';
             rightSubBtn.className = 'btn sub-btn bg-dark-blue';
         }
@@ -119,11 +130,10 @@ if (!roomId) {
         } else {
             leftAddBtn.innerText = '+1';
             rightAddBtn.innerText = '+1';
-            // className 赋值已经清除了之前的 class，这里以防万一还是 remove 一下
             leftAddBtn.classList.remove('next-set-mode');
             rightAddBtn.classList.remove('next-set-mode');
         }
-    });
+    }
 
     // 弹窗控制逻辑
     function openModal() {
@@ -162,9 +172,11 @@ if (!roomId) {
         let rightName = modalRightInput.value.trim() || defaultRight;
 
         // 发送给服务器的是物理显示上的名字，服务器 app.js 在 state 中存的就是物理显示名字
-        // 但是 app.js 里的 swap 逻辑是如果 swapped，会反转数据。
-        // 为了避免逻辑混乱，因为 app.js 里面的队名存储就是直观对应的，所以直接把这两个名字发过去即可，大屏收到后直接覆盖当前状态
-        socket.emit('update-team-names', { roomId, leftName, rightName });
+        // 如果小屏映射被反转了，手机的左边对应的是大屏的右边，需要反转发送
+        let serverLeftName = remoteMappingReversed ? rightName : leftName;
+        let serverRightName = remoteMappingReversed ? leftName : rightName;
+
+        socket.emit('update-team-names', { roomId, leftName: serverLeftName, rightName: serverRightName });
         closeModal();
     }
 
@@ -186,7 +198,21 @@ if (!roomId) {
     });
 
     swapConfirmBtn.addEventListener('click', () => {
-        socket.emit('swap-teams', { roomId });
+        const swapScreen = document.getElementById('cb-swap-screen').checked;
+        const swapRemote = document.getElementById('cb-swap-remote').checked;
+
+        if (swapScreen !== swapRemote) {
+            remoteMappingReversed = !remoteMappingReversed;
+        }
+
+        if (swapScreen) {
+            // 交换大屏，大屏处理完后会广播 state-updated，届时会自动触发 renderState
+            socket.emit('swap-teams', { roomId });
+        } else if (swapRemote) {
+            // 只交换小屏，不会有网络通信，直接本地重新渲染
+            renderState();
+        }
+
         swapModal.classList.remove('active');
     });
 
@@ -232,7 +258,16 @@ if (!roomId) {
                 if (isCooldown) return;
 
                 if (socket.connected) {
-                    let finalAction = action;
+                    let emitAction = action;
+                    // 如果小屏映射被反转了，需要交换左右按键发送的指令
+                    if (remoteMappingReversed) {
+                        if (action === 'left-add') emitAction = 'right-add';
+                        else if (action === 'left-sub') emitAction = 'right-sub';
+                        else if (action === 'right-add') emitAction = 'left-add';
+                        else if (action === 'right-sub') emitAction = 'left-sub';
+                    }
+
+                    let finalAction = emitAction;
                     // 如果当前是“下一局”状态，且点击的是加分按钮，则发送 next-set 命令
                     if (btn.classList.contains('next-set-mode') && (action === 'left-add' || action === 'right-add')) {
                         finalAction = 'next-set';

@@ -76,7 +76,11 @@
     <!-- 交换场地确认弹窗 -->
     <div class="modal-overlay" id="swap-modal">
         <div class="modal-content swap-confirm-content">
-            <p>确定要交换两队的位置和分数吗？</p>
+            <p>请选择要交换显示位置的屏幕：</p>
+            <div class="swap-options">
+                <label><input type="checkbox" id="cb-swap-screen" checked> 交换大屏</label>
+                <label><input type="checkbox" id="cb-swap-remote" checked> 交换小屏</label>
+            </div>
             <div class="modal-actions">
                 <button class="modal-btn save-btn" id="swap-confirm">确定交换</button>
                 <button class="modal-btn cancel-btn" id="swap-cancel">取消</button>
